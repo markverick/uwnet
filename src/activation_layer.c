@@ -69,7 +69,19 @@ matrix backward_activation_layer(layer l, matrix dy)
     // d/dx relu(x)     = 1 if x > 0 else 0
     // d/dx lrelu(x)    = 1 if x > 0 else 0.01
     // d/dx softmax(x)  = 1
-
+    if (a == LOGISTIC) {
+        for (int i = 0; i < x.rows * x.cols; i++) {
+            dx.data[i] *= exp(x.data[i]) / pow((1 + exp(x.data[i])), 2);
+        }
+    } else if (a == RELU) {
+        for (int i = 0; i < x.rows * x.cols; i++) {
+            dx.data[i] *= x.data[i] > 0? 1: 0;
+        }
+    } else if (a == LRELU) {
+        for (int i = 0; i < x.rows * x.cols; i++) {
+            dx.data[i] *= x.data[i] > 0? 1: 0.01;
+        }
+    }
     return dx;
 }
 
