@@ -24,7 +24,29 @@ matrix forward_activation_layer(layer l, matrix x)
     // relu(x)     = x if x > 0 else 0
     // lrelu(x)    = x if x > 0 else .01 * x
     // softmax(x)  = e^{x_i} / sum(e^{x_j}) for all x_j in the same row 
-
+    if (a == LOGISTIC) {
+        for (int i = 0; i < x.rows * x.cols; i++) {
+            y.data[i] = 1 / (1 + exp(-y.data[i]));
+        }
+    } else if (a == RELU) {
+        for (int i = 0; i < x.rows * x.cols; i++) {
+                y.data[i] = y.data[i] > 0? y.data[i]: 0;
+        }
+    } else if (a == LRELU) {
+        for (int i = 0; i < x.rows * x.cols; i++) {
+                y.data[i] = y.data[i] > 0? y.data[i]: 0.01 * y.data[i];
+        }
+    } else if (a == SOFTMAX) {
+        for (int i = 0; i < x.rows; i++) {
+            int sum = 0;
+            for (int j = 0; j < x.cols; j++) {
+                sum += exp(y.data[i * x.cols + j]);
+            }
+            for (int j = 0; j < x.cols; j++) {
+                y.data[i * x.cols + j] = exp(y.data[i * x.cols + j]) / sum;
+            }
+        }
+    }
     return y;
 }
 
