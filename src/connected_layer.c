@@ -73,8 +73,11 @@ matrix backward_connected_layer(layer l, matrix dy)
 
     // Calculate dL/dx and return it
     matrix dx = copy_matrix(x); // Change this
-
-
+    matrix db = backward_bias(dy);
+    axpy_matrix(1.0, db, l.db);
+    matrix dw = matmul(transpose_matrix(x), dy);
+    axpy_matrix(1.0, dw, l.dw);
+    dx = matmul(dy, transpose_matrix(l.w));
     return dx;
 }
 
