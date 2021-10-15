@@ -97,6 +97,12 @@ void update_connected_layer(layer l, float rate, float momentum, float decay)
     // we want it to be (-momentum * update) so we just need to scale it a little
 
     // Do the same for biases as well but no need to use weight decay on biases
+    axpy_matrix(decay, l.w, l.dw);
+    axpy_matrix(-rate, l.dw, l.w);
+    scal_matrix(momentum, l.dw);
+    axpy_matrix(-rate, l.db, l.b);
+    scal_matrix(momentum, l.db);
+    // l.w = l.w - rate * momentum * l.dw;
 }
 
 layer make_connected_layer(int inputs, int outputs)
