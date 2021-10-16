@@ -1,6 +1,6 @@
 from uwnet import *
 
-mnist = 1
+mnist = 0
 
 inputs = 784 if mnist else 3072
 
