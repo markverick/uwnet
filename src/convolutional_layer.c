@@ -72,7 +72,7 @@ matrix im2col(image im, int size, int stride)
     matrix col = make_matrix(rows, cols);
     // TODO: 5.1
     // Fill in the column matrix with patches from the image
-    printf("[%d] %d x %d = %d\n", size, rows, cols, rows * cols);
+    // printf("[%d] %d x %d = %d\n", size, rows, cols, rows * cols);
     for (int k = 0; k < im.c; k++) {
         int y3 = 0;
         for (int i = 0; i < im.h; i += stride) {
@@ -81,8 +81,26 @@ matrix im2col(image im, int size, int stride)
             }
         }
     }
-
     return col;
+}
+
+void col2im_helper(matrix in, image im, int y3, int size, int x, int y, int c) {
+    int offset = c * size * size * in.cols;
+    int index = 0;
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            int x1 = x - (size + 1) / 2 + 1 + i;
+            int y1 = y - (size + 1) / 2 + 1 + j;
+
+            double val = get_pixel(im, y1, x1, c);
+            val += in.data[offset + index * in.cols + y3];
+
+            if (x1 >= 0 && x1 < im.h && y1 >= 0 && y1 < im.w) {
+                set_pixel(im, y1, x1, c, val);
+            }
+            index++;
+        }
+    }
 }
 
 // The reverse of im2col, add elements back into image
@@ -100,7 +118,15 @@ image col2im(int width, int height, int channels, matrix col, int size, int stri
 
     // TODO: 5.2
     // Add values into image im from the column matrix
-    
+    for (int k = 0; k < im.c; k++) {
+        int y3 = 0;
+        for (int i = 0; i < im.h; i += stride){
+            for (int j = 0; j < im.w; j += stride) {
+                // iterate over every pixel in the image
+                col2im_helper(col, im, y3++, size, i, j, k);
+            }
+        }
+    }
 
 
     return im;
