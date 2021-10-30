@@ -41,6 +41,23 @@ matrix backward_convolutional_bias(matrix dy, int n)
     return db;
 }
 
+void im2col_helper (image im, matrix out, int y_out, int size, int x, int y, int c) {
+    int offset = c * size * size * out.cols;
+    int index = 0;
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            int x1 = x - (size + 1) / 2 + 1 + i;
+            int y1 = y - (size + 1) / 2 + 1 + j;
+            if (x1 >= 0 && x1 < im.h && y1 >= 0 && y1 < im.w) {
+                out.data[offset + index * out.cols + y_out] = get_pixel(im, y1, x1, c);
+            } else {
+                out.data[offset + index * out.cols + y_out] = 0;
+            }
+            index++;
+        }
+    }
+}
+
 // Make a column matrix out of an image
 // image im: image to process
 // int size: kernel size for convolution operation
@@ -48,17 +65,22 @@ matrix backward_convolutional_bias(matrix dy, int n)
 // returns: column matrix
 matrix im2col(image im, int size, int stride)
 {
-    int i, j, k;
     int outw = (im.w-1)/stride + 1;
     int outh = (im.h-1)/stride + 1;
     int rows = im.c*size*size;
     int cols = outw * outh;
     matrix col = make_matrix(rows, cols);
-
     // TODO: 5.1
     // Fill in the column matrix with patches from the image
-
-
+    printf("[%d] %d x %d = %d\n", size, rows, cols, rows * cols);
+    for (int k = 0; k < im.c; k++) {
+        int y3 = 0;
+        for (int i = 0; i < im.h; i += stride) {
+            for (int j = 0; j < im.w; j += stride) {
+                im2col_helper(im, col, y3++, size, i, j, k);
+            }
+        }
+    }
 
     return col;
 }
