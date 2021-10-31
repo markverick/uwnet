@@ -4,7 +4,30 @@
 #include <float.h>
 #include "uwnet.h"
 
-
+float forward_maxpool_layer_helper(matrix in, matrix out, int x, int y, int c, layer l, int y3, int outw, int outh) {
+    float mx = 0;
+    int mx_guard = 1;
+    int offset = l.width * l.height * c;
+    for (int i = 0; i < l.size; i++) {
+        for (int j = 0; j < l.size; j++) {
+            int x1 = x - (l.size + 1) / 2 + 1 + i;
+            int y1 = y - (l.size + 1) / 2 + 1 + j;
+            float val = 0;
+            if (x1 >= 0 && x1 < in.rows && y1 >= 0 && y1 < in.cols) {
+                val = in.data[offset + x1 * in.cols + y1];
+            }
+            if (mx_guard) {
+                mx_guard = 0;
+                mx = val;
+                continue;
+            }
+            if (mx < val) {
+                mx = val;
+            }
+        }
+    }
+    out.data[outw * outh * c + y3] = mx;
+}
 // Run a maxpool layer on input
 // layer l: pointer to layer to run
 // matrix in: input to layer
@@ -20,9 +43,23 @@ matrix forward_maxpool_layer(layer l, matrix in)
     int outh = (l.height-1)/l.stride + 1;
     matrix out = make_matrix(in.rows, outw*outh*l.channels);
 
+    // printf("%d %d %d %d\n", in.rows, in.cols, outh, outw);
     // TODO: 6.1 - iterate over the input and fill in the output with max values
-
-
+    int y3 = 0;
+    for (int k = 0; k < in.rows; k++) {
+        matrix im = make_matrix(l.channels * l.height, l.width);
+        im.data = in.data + k * in.cols;
+        matrix im_out = make_matrix(outh * l.channels, outw);
+        im_out.data = out.data + k * out.cols;
+        for (int c = 0; c < l.channels; c++) {
+            y3 = 0;
+            for (int i = 0; i < l.height; i += l.stride){
+                for (int j = 0; j < l.width; j += l.stride) {
+                    forward_maxpool_layer_helper(im, im_out, i, j, c, l, y3++, outw, outh);
+                }
+            }
+        }
+    }
 
     return out;
 }
