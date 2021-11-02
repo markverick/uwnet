@@ -45,14 +45,13 @@ matrix forward_maxpool_layer(layer l, matrix in)
 
     // printf("%d %d %d %d\n", in.rows, in.cols, outh, outw);
     // TODO: 6.1 - iterate over the input and fill in the output with max values
-    int y3 = 0;
     for (int k = 0; k < in.rows; k++) {
         matrix im = make_matrix(l.channels * l.height, l.width);
         im.data = in.data + k * in.cols;
         matrix im_out = make_matrix(outh * l.channels, outw);
         im_out.data = out.data + k * out.cols;
         for (int c = 0; c < l.channels; c++) {
-            y3 = 0;
+            int y3 = 0;
             for (int i = 0; i < l.height; i += l.stride){
                 for (int j = 0; j < l.width; j += l.stride) {
                     forward_maxpool_layer_helper(im, im_out, i, j, c, l, y3++, outw, outh);
@@ -60,8 +59,38 @@ matrix forward_maxpool_layer(layer l, matrix in)
             }
         }
     }
-
     return out;
+}
+
+void backward_maxpool_layer_helper(matrix in, matrix dx, matrix dy, int x, int y, int c, layer l, int y3, int outw, int outh) {
+    float mx = 0;
+    int mx_idx = -1;
+    int offset = l.width * l.height * c;
+    for (int i = 0; i < l.size; i++) {
+        for (int j = 0; j < l.size; j++) {
+            int x1 = x - (l.size + 1) / 2 + 1 + i;
+            int y1 = y - (l.size + 1) / 2 + 1 + j;
+            int idx;
+            float val;
+            if (x1 >= 0 && x1 < in.rows && y1 >= 0 && y1 < in.cols) {
+                idx = offset + x1 * in.cols + y1;
+                val = in.data[idx];
+            } else {
+                idx = 0;
+                val = 0;
+            }
+            if (mx_idx == -1) {
+                mx = val;
+                mx_idx = idx;
+                continue;
+            }
+            if (val > mx) {
+                mx = val;
+                mx_idx = idx;
+            }
+        }
+    }
+    dx.data[mx_idx] += dy.data[outw * outh * c + y3];
 }
 
 // Run a maxpool layer backward
@@ -69,16 +98,40 @@ matrix forward_maxpool_layer(layer l, matrix in)
 // matrix dy: error term for the previous layer
 matrix backward_maxpool_layer(layer l, matrix dy)
 {
-    matrix in    = *l.x;
+    matrix in = *l.x;
     matrix dx = make_matrix(dy.rows, l.width*l.height*l.channels);
 
     int outw = (l.width-1)/l.stride + 1;
     int outh = (l.height-1)/l.stride + 1;
+
+    // printf("%d %d %d %d\n", l.height, l.width, dy.rows, dy.cols / 3);
     // TODO: 6.2 - find the max values in the input again and fill in the
     // corresponding delta with the delta from the output. This should be
     // similar to the forward method in structure.
+    for (int k = 0; k < in.rows; k++) {
+        matrix im;
+        im.rows = l.height * l.channels;
+        im.cols = l.width;
+        im.data = in.data + k * in.cols;
 
+        matrix im_dy;
+        im_dy.rows = outh * l.channels;
+        im_dy.cols = outw;
+        im_dy.data = dy.data + k * dy.cols;
 
+        matrix im_dx;
+        im_dx.rows = l.height * l.channels;
+        im_dx.cols = l.width;
+        im_dx.data = dx.data + k * dx.cols;
+        for (int c = 0; c < l.channels; c++) {
+            int y3 = 0;
+            for (int i = 0; i < l.height; i += l.stride){
+                for (int j = 0; j < l.width; j += l.stride) {
+                    backward_maxpool_layer_helper(im, im_dx, im_dy, i, j, c, l, y3++, outw, outh);
+                }
+            }
+        }
+    }
 
     return dx;
 }

@@ -92,7 +92,7 @@ void col2im_helper(matrix in, image im, int y3, int size, int x, int y, int c) {
             int x1 = x - (size + 1) / 2 + 1 + i;
             int y1 = y - (size + 1) / 2 + 1 + j;
 
-            double val = get_pixel(im, y1, x1, c);
+            float val = get_pixel(im, y1, x1, c);
             val += in.data[offset + index * in.cols + y3];
 
             if (x1 >= 0 && x1 < im.h && y1 >= 0 && y1 < im.w) {
