@@ -51,7 +51,7 @@ matrix forward_connected_layer(layer l, matrix x)
     // TODO: 3.1 - run the network forward
     matrix y = make_matrix(x.rows, l.w.cols); // Going to want to change this!
     y = matmul(x, l.w);
-    // printf("CONNECTED LAYER: %d\n", x.rows * x.cols * l.w.cols);
+    printf("CONNECTED LAYER: %d\n", x.rows * x.cols * l.w.cols);
     y = forward_bias(y, l.b);
 
     return y;

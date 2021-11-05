@@ -1,19 +1,9 @@
 from uwnet import *
 
 def conv_net():
-    l = [   make_convolutional_layer(32, 32, 3, 8, 3, 1),
+    l = [   make_connected_layer(3072, 40),
             make_activation_layer(RELU),
-            make_maxpool_layer(32, 32, 8, 3, 2),
-            make_convolutional_layer(16, 16, 8, 16, 3, 1),
-            make_activation_layer(RELU),
-            make_maxpool_layer(16, 16, 16, 3, 2),
-            make_convolutional_layer(8, 8, 16, 32, 3, 1),
-            make_activation_layer(RELU),
-            make_maxpool_layer(8, 8, 32, 3, 2),
-            make_convolutional_layer(4, 4, 32, 64, 3, 1),
-            make_activation_layer(RELU),
-            make_maxpool_layer(4, 4, 64, 3, 2),
-            make_connected_layer(256, 10),
+            make_connected_layer(40, 10),
             make_activation_layer(SOFTMAX)]
     return make_net(l)
 
@@ -43,8 +33,10 @@ print("test accuracy:     %f", accuracy_net(m, test))
 # How accurate is the fully connected network vs the convnet when they use similar number of operations?
 # Why are you seeing these results? Speculate based on the information you've gathered and what you know about DL and ML.
 # Your answer: 
-# Training accuracy: 0.981267
-# Testing  accuracy: 0.982300
+
+# For default conv network
+# training accuracy : 0.6817200183868408
+# test accuracy     : 0.6394000053405762
 #
 # The total number of operations of the original covnet is: 
 # CONV LAYER: 221184
@@ -54,3 +46,16 @@ print("test accuracy:     %f", accuracy_net(m, test))
 # CONNECTED LAYER: 327680
 # Total counts: 1,105,920 + 327,680 = 1,433,600 Operations
 
+
+# For the fully connected network
+# training accuracy : 0.4361000061035156
+# test accuracy     : 0.4146000146865845
+# It is extremely hard for the fully connected network to match the performance of the convolutional
+# network. With as small as 1.4 million operations, I can only put 2 layers of (3072, 40) and
+# (40, 10). It needs a slightly more operations and has lower performance than 
+# the convolutional network.
+
+# The total number of maxtrix operations:
+# CONNECTED LAYER: 15728640
+# CONNECTED LAYER: 51200
+# Total counts: 15728640 + 51200 = 15,779,840
