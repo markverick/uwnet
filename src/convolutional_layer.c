@@ -144,14 +144,18 @@ matrix forward_convolutional_layer(layer l, matrix in)
     free_matrix(*l.x);
     *l.x = copy_matrix(in);
 
+    long long cot = 0;
     int i, j;
     int outw = (l.width-1)/l.stride + 1;
     int outh = (l.height-1)/l.stride + 1;
     matrix out = make_matrix(in.rows, outw*outh*l.filters);
     for(i = 0; i < in.rows; ++i){
+        cot = 0;
         image example = float_to_image(in.data + i*in.cols, l.width, l.height, l.channels);
         matrix x = im2col(example, l.size, l.stride);
         matrix wx = matmul(l.w, x);
+        // printf("%d %d %d\n", l.w.rows, l.w.cols, x.cols);
+        cot += (long long) (l.w.rows) * l.w.cols * x.cols;
         for(j = 0; j < wx.rows*wx.cols; ++j){
             out.data[i*out.cols + j] = wx.data[j];
         }
@@ -160,7 +164,7 @@ matrix forward_convolutional_layer(layer l, matrix in)
     }
     matrix y = forward_convolutional_bias(out, l.b);
     free_matrix(out);
-
+    // printf("CONV LAYER: %lld\n", cot);
     return y;
 }
 

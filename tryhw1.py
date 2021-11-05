@@ -42,6 +42,15 @@ print("test accuracy:     %f", accuracy_net(m, test))
 
 # How accurate is the fully connected network vs the convnet when they use similar number of operations?
 # Why are you seeing these results? Speculate based on the information you've gathered and what you know about DL and ML.
-# Your answer:
+# Your answer: 
+# Training accuracy: 0.981267
+# Testing  accuracy: 0.982300
 #
+# The total number of operations of the original covnet is: 
+# CONV LAYER: 221184
+# CONV LAYER: 294912
+# CONV LAYER: 294912
+# CONV LAYER: 294912
+# CONNECTED LAYER: 327680
+# Total counts: 1,105,920 + 327,680 = 1,433,600 Operations
 

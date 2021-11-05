@@ -5,8 +5,7 @@
 #include "uwnet.h"
 
 float forward_maxpool_layer_helper(matrix in, matrix out, int x, int y, int c, layer l, int y3, int outw, int outh) {
-    float mx = 0;
-    int mx_guard = 1;
+    float mx = -FLT_MAX;
     int offset = l.width * l.height * c;
     for (int i = 0; i < l.size; i++) {
         for (int j = 0; j < l.size; j++) {
@@ -15,11 +14,6 @@ float forward_maxpool_layer_helper(matrix in, matrix out, int x, int y, int c, l
             float val = 0;
             if (x1 >= 0 && x1 < in.rows && y1 >= 0 && y1 < in.cols) {
                 val = in.data[offset + x1 * in.cols + y1];
-            }
-            if (mx_guard) {
-                mx_guard = 0;
-                mx = val;
-                continue;
             }
             if (mx < val) {
                 mx = val;
@@ -63,7 +57,7 @@ matrix forward_maxpool_layer(layer l, matrix in)
 }
 
 void backward_maxpool_layer_helper(matrix in, matrix dx, matrix dy, int x, int y, int c, layer l, int y3, int outw, int outh) {
-    float mx = 0;
+    float mx = -FLT_MAX;
     int mx_idx = -1;
     int offset = l.width * l.height * c;
     for (int i = 0; i < l.size; i++) {
