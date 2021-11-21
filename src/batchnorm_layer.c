@@ -30,6 +30,16 @@ matrix variance(matrix x, matrix m, int groups)
 {
     matrix v = make_matrix(1, groups);
     // TODO: 7.1 - Calculate variance
+    int n = x.cols / groups;
+    int i, j;
+    for(i = 0; i < x.rows; ++i){
+        for(j = 0; j < x.cols; ++j){
+            v.data[j/n] += pow((x.data[i*x.cols + j] - m.data[j/n]), 2);
+        }
+    }
+    for(i = 0; i < v.cols; ++i){
+        v.data[i] = v.data[i] / x.rows / n;
+    }
     return v;
 }
 
@@ -39,6 +49,15 @@ matrix normalize(matrix x, matrix m, matrix v, int groups)
 {
     matrix norm = make_matrix(x.rows, x.cols);
     // TODO: 7.2 - Normalize x
+    float eps = 0.00001f;
+    int n = x.cols / groups;
+    int i,j;
+    for(i = 0; i < x.rows; ++i){
+        for(j = 0; j < x.cols; ++j){
+            // norm.data[i] = (x.data[i] - m.data[i]) / sqrt(v.data[i] + eps);
+            norm.data[i*x.cols + j] += (x.data[i*x.cols + j] - m.data[j/n]) / sqrt(v.data[j/n] + eps);
+        }
+    }
     return norm;
 }
 
@@ -79,6 +98,16 @@ matrix delta_mean(matrix d, matrix v)
     int groups = v.cols;
     matrix dm = make_matrix(1, groups);
     // TODO 7.3 - Calculate dL/dm
+    int i, j;
+    float eps = 0.00001f;
+    int n = d.cols / groups;
+    for(i = 0; i < d.rows; ++i){
+        for(j = 0; j < d.cols; ++j){
+            float left = d.data[i*d.cols + j];
+            float right = -1.0/sqrt(v.data[j/n] + eps);
+            dm.data[j/n] += left * right;
+        }
+    }
     return dm;
 }
 
@@ -88,6 +117,17 @@ matrix delta_variance(matrix d, matrix x, matrix m, matrix v)
     int groups = m.cols;
     matrix dv = make_matrix(1, groups);
     // TODO 7.4 - Calculate dL/dv
+    float eps = 0.00001f;
+    int n = d.cols / groups;
+    int i, j;
+    for(i = 0; i < d.rows; ++i){
+        for(j = 0; j < d.cols; ++j){
+            float left = d.data[i*d.cols + j];
+            float mid = (x.data[i*d.cols + j]) - m.data[j/n];
+            float right = -pow(v.data[j/n] + eps, -1.5) / 2.0;
+            dv.data[j/n] += left * mid * right;
+        }
+    }
     return dv;
 }
 
@@ -95,6 +135,18 @@ matrix delta_batch_norm(matrix d, matrix dm, matrix dv, matrix m, matrix v, matr
 {
     matrix dx = make_matrix(d.rows, d.cols);
     // TODO 7.5 - Calculate dL/dx
+    float eps = 0.00001f;
+    int n = d.cols / m.cols;
+    int N = n * d.rows;
+    int i, j;
+    for(i = 0; i < d.rows; ++i){
+        for(j = 0; j < d.cols; ++j){
+            float left = d.data[i*d.cols + j] / sqrt(v.data[j/n] + eps);
+            float mid = dv.data[j/n] * 2.0 * (x.data[i*d.cols + j] - m.data[j/n]) / N;
+            float right = dm.data[j/n] / N;
+            dx.data[i*d.cols + j] = left + mid + right;
+        }
+    }
     return dx;
 }
 
